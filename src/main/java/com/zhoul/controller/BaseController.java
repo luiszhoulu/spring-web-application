@@ -1,5 +1,6 @@
 package com.zhoul.controller;
 
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -10,6 +11,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -49,29 +51,26 @@ public class BaseController {
     public void download(@RequestParam String id, HttpServletResponse response) throws IOException {
         //1.设置文件ContentType类型，这样设置，会自动判断下载文件类型
         response.setContentType("multipart/form-data");
+        String filename = URLEncoder.encode("压缩文件", "UTF-8");
         //2.设置文件头：最后一个参数是设置下载文件名(假如我们叫a.pdf)
-        response.setHeader("Content-Disposition", "attachment;fileName="+"a.pdf");
-        ServletOutputStream out;
+        response.setHeader("Content-Disposition", "attachment;fileName="+ filename + ".zip");
+        ServletOutputStream out = response.getOutputStream();
         File file = new File("C:\\Users\\Luis\\Documents\\行程单.pdf ");
-        try {
-            FileInputStream inputStream = new FileInputStream(file);
+        try (FileInputStream inputStream = new FileInputStream(file);
+             ZipOutputStream zos = new ZipOutputStream(out)){
 
             //3.通过response获取ServletOutputStream对象(out)
-            out = response.getOutputStream();
+            ZipArchiveEntry zipEntry = new ZipArchiveEntry("大都会(だいとかい)に 仆(ぼく)/newFileName.pdf");
+            zos.putNextEntry(zipEntry);
 
             int b = 0;
             byte[] buffer = new byte[512];
             while (b != -1){
                 b = inputStream.read(buffer);
                 //4.写到输出流(out)中
-                out.write(buffer,0,b);
+                zos.write(buffer,0,b);
             }
-            inputStream.close();
-            out.close();
-            out.flush();
-
-        } catch (IOException e) {
-            e.printStackTrace();
+            zos.closeEntry();
         }
         logger.debug("[Welcome counter :{}", counter);
     }
