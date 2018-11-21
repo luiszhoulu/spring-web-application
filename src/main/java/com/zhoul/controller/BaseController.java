@@ -1,6 +1,7 @@
 package com.zhoul.controller;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -57,11 +58,11 @@ public class BaseController {
         ServletOutputStream out = response.getOutputStream();
         File file = new File("C:\\Users\\Luis\\Documents\\行程单.pdf ");
         try (FileInputStream inputStream = new FileInputStream(file);
-             ZipOutputStream zos = new ZipOutputStream(out)){
+             ZipArchiveOutputStream zos = new ZipArchiveOutputStream(out)){
 
             //3.通过response获取ServletOutputStream对象(out)
             ZipArchiveEntry zipEntry = new ZipArchiveEntry("大都会(だいとかい)に 仆(ぼく)/newFileName.pdf");
-            zos.putNextEntry(zipEntry);
+            zos.putArchiveEntry(zipEntry);
 
             int b = 0;
             byte[] buffer = new byte[512];
@@ -70,7 +71,8 @@ public class BaseController {
                 //4.写到输出流(out)中
                 zos.write(buffer,0,b);
             }
-            zos.closeEntry();
+
+            zos.setEncoding("MS932");
         }
         logger.debug("[Welcome counter :{}", counter);
     }
